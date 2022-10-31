@@ -64,7 +64,7 @@ The pretrained networks for each experiment can be found in the ```releases``` s
 
 ## TPU Support Acknowledgement
 
-This code was developed the with Cloud TPUs from Google's TPU Research Cloud (TRC).
+This code was developed with Cloud TPUs from Google's TPU Research Cloud (TRC).
 
 ## Contact
 
