@@ -1,0 +1,7 @@
+tensorflow==2.6.0
+keras==2.6.0
+tensorflow_addons==0.16.1
+tensorflow_datasets==4.5.2
+matplotlib
+numpy
+scipy

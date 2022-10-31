@@ -1,0 +1,4 @@
+__pycache__/*
+configs_joint/__pycache__/*
+configs_synth/__pycache__/*
+fid/__pycache__/*
