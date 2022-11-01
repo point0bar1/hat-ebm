@@ -2,7 +2,7 @@
 
 This repository will reproduce the main results from our paper
 
-**Learning Probabilistic Models from Generator Latent Spaces with Hat EBM**<br/>Mitch Hill, Erik Nijkamp, Jonathan Mitchell, Bo Pang, Song-Chun Zhu<br/>NeurIPS 2022.
+**Learning Probabilistic Models from Generator Latent Spaces with Hat EBM**<br/>Mitch Hill, Erik Nijkamp, Jonathan Mitchell, Bo Pang, Song-Chun Zhu<br/>https://arxiv.org/pdf/2210.16486.pdf<br/>NeurIPS 2022.
 
 All experiments use Tensorflow 2. Both multi-GPU and TPU are supported.
 
