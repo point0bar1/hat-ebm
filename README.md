@@ -52,7 +52,7 @@ This experiment will take a generator trained from an SN-GAN and train a Hat EBM
 
 The ```fid``` folder contains the executable files to perform FID evaluation and config files that will reproduce the scores from our paper for each of the pretrained nets. The file ```fid_save_ims.py``` can be used to visualize samples from a trained network and to save samples in numpy format that can be used for FID evaluation with the original TF1 FID code. An example command for running this file is
 
-```python3 fid/fid_save_ims.py --config.name fid/fid_config.py```
+```python3 fid/fid_save_ims.py --config_name fid/fid_config.py```
 
 The file ```fid_orig.py``` contains the original FID code that is adapted to read the numpy files saved by ```fid_save_ims.py```. This can be run with the command
 
