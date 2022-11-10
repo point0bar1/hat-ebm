@@ -28,7 +28,7 @@ Note that only TF Records for CIFAR-10 can be downloaded automatically, while Ce
 
 ## Running a Training Job
 
-To run a training experiment, you will need an executable file ```train_hat_ebm_joint.py```, ```train_hat_ebm_synth.py```, or ```train_ae.py```, and a config from the the ```configs_joint``` or ```config_synth``` folder. The execution command is
+To run a training experiment, you will need an executable file ```train_hat_ebm_joint.py``` (for retrofit and refinement training), ```train_hat_ebm_synth.py``` (for synthesis training), or ```train_ae.py```, and a config from the the ```configs_joint``` or ```config_synth``` folder. The execution command is
 
 ```python3 TRAIN_FILE CONFIG_FOLDER/CONFIG_FILE```
 
