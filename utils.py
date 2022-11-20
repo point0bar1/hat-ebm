@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 import tensorflow as tf
 import numpy as np
-import pickle
 
 
 def upload_blob(bucket_name, source_file_name, destination_blob_name):
@@ -35,6 +34,20 @@ def download_blob(bucket_name, source_file_name, destination_blob_name):
       source_file_name, destination_blob_name
     )
   )
+
+def save_npy(path, np_array, save_to_cloud=False, gs_path=None):
+  np.save(path, np_array)
+  if save_to_cloud:
+    upload_blob(gs_path, path, path)
+    # remove to save space
+    os.remove(path)
+
+def save_npz(path, np_arrays, save_to_cloud=False, gs_path=None):
+  np.savez(path, *np_arrays)
+  if save_to_cloud:
+    upload_blob(gs_path, path, path)
+    # remove to save space
+    os.remove(path)
 
 # visualize images with pixels in range [-1, 1]
 def plot_ims(path, ims): 
@@ -172,48 +185,22 @@ def save_model(config, step, strategy, ebm, ims_samp, gen, ims_latent,
 
     # save optim
     if ebm_optim is not None:
-      ebm_optim_weights = ebm_optim.get_weights()
-      with open(os.path.join(exp_folder, 'checkpoints/ebm_optim_{}.ckpt'.format(step+1)), 'wb') as f:
-        pickle.dump(ebm_optim_weights, f)
-      if config['save_to_cloud']:
-        upload_blob(config['gs_path'],
-                    os.path.join(exp_folder, 'checkpoints/ebm_optim_'+str(step+1)+'.ckpt'),
-                    os.path.join(exp_folder, 'checkpoints/ebm_optim_'+str(step+1)+'.ckpt'))
-        # remove to save space
-        os.remove(os.path.join(exp_folder, 'checkpoints/ebm_optim_'+str(step+1)+'.ckpt'))
+      ebm_optim_path = os.path.join(exp_folder, 'checkpoints/ebm_optim_'+str(step+1)+'.npz')
+      save_npz(ebm_optim_path, ebm_optim.get_weights(), config['save_to_cloud'], config['gs_path'])
 
     # save gen optim
     if gen_optim is not None:
-      gen_optim_weights = gen_optim.get_weights()
-      with open(os.path.join(exp_folder, 'checkpoints/gen_optim_{}.ckpt'.format(step+1)), 'wb') as f:
-        pickle.dump(gen_optim_weights, f)
-      if config['save_to_cloud']:
-        upload_blob(config['gs_path'],
-                    os.path.join(exp_folder, 'checkpoints/gen_optim_'+str(step+1)+'.ckpt'),
-                    os.path.join(exp_folder, 'checkpoints/gen_optim_'+str(step+1)+'.ckpt'))
-        # remove to save space
-        os.remove(os.path.join(exp_folder, 'checkpoints/gen_optim_'+str(step+1)+'.ckpt'))
+      gen_optim_path = os.path.join(exp_folder, 'checkpoints/gen_optim_'+str(step+1)+'.npz')
+      save_npz(gen_optim_path, gen_optim.get_weights(), config['save_to_cloud'], config['gs_path'])
 
     # save persistent states to cloud (once every 20 checkpoints)
     if ims_persistent is not None and (step + 1) % (20 * config['log_freq']) == 0:
-      ims_persistent_gather = strategy.gather(ims_persistent, axis=0)
-      with open(os.path.join(exp_folder, 'checkpoints/persistent_'+str(step+1)+'.ckpt'), 'wb') as f:
-        pickle.dump(ims_persistent_gather, f)
-      if config['save_to_cloud']:
-        upload_blob(config['gs_path'],
-                    os.path.join(exp_folder, 'checkpoints/persistent_'+str(step+1)+'.ckpt'),
-                    os.path.join(exp_folder, 'checkpoints/persistent_'+str(step+1)+'.ckpt'))
-        # remove to save space
-        os.remove(os.path.join(exp_folder, 'checkpoints/persistent_'+str(step+1)+'.ckpt'))
+      persistent_path = os.path.join(exp_folder, 'checkpoints/persistent_'+str(step+1)+'.npy')
+      ims_persistent_np = strategy.gather(ims_persistent, axis=0).numpy()
+      save_npy(persistent_path, ims_persistent_np, config['save_to_cloud'], config['gs_path'])
 
     # save persistent z to cloud (once every 20 checkpoints)
     if z_persistent is not None and (step + 1) % (20 * config['log_freq']) == 0:
-      z_persistent_gather = strategy.gather(z_persistent, axis=0)
-      with open(os.path.join(exp_folder, 'checkpoints/persistent_z_'+str(step+1)+'.ckpt'), 'wb') as f:
-        pickle.dump(z_persistent_gather, f)
-      if config['save_to_cloud']:
-        upload_blob(config['gs_path'],
-                    os.path.join(exp_folder, 'checkpoints/persistent_z_'+str(step+1)+'.ckpt'),
-                    os.path.join(exp_folder, 'checkpoints/persistent_z_'+str(step+1)+'.ckpt'))
-        # remove to save space
-        os.remove(os.path.join(exp_folder, 'checkpoints/persistent_z_'+str(step+1)+'.ckpt'))
+      z_persistent_path = os.path.join(exp_folder, 'checkpoints/persistent_z_'+str(step+1)+'.npy')
+      z_persistent_np = strategy.gather(z_persistent, axis=0).numpy()
+      save_npy(z_persistent_path, z_persistent_np, config['save_to_cloud'], config['gs_path'])

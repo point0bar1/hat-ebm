@@ -7,7 +7,7 @@ from data import get_dataset
 from utils import download_blob
 
 import os
-import pickle
+import numpy as np
 
 
 def initialize_strategy(device_type):
@@ -88,9 +88,10 @@ def initialize_net_and_optim(
     exp_folder = os.path.join(config['exp_dir'], config['exp_name'])
 
     # download persistent ims from cloud
-    temp_optim_path = os.path.join(exp_folder, 'checkpoints/optim_download.ckpt')
+    temp_optim_path = os.path.join(exp_folder, 'checkpoints/optim_download.npz')
     download_blob(config['gs_path'], file_name, temp_optim_path)
-    optim_weights = pickle.load(open(temp_optim_path, 'rb'))
+    optim_weights_npz = np.load(temp_optim_path)
+    optim_weights = [optim_weights_npz[item] for item in optim_weights_npz.files]
     # remove to save space
     os.remove(temp_optim_path)
 
@@ -112,7 +113,8 @@ def initialize_net_and_optim(
       optim_weights = download_optim(optim_weights)
     else:
       # load from local storage
-      optim_weights = pickle.load(open(optim_weights, 'rb'))
+      optim_weights_npz = np.load(optim_weights)
+      optim_weights = [optim_weights_npz[item] for item in optim_weights_npz.files]
     optim.set_weights(optim_weights)
 
   return net, optim
@@ -146,9 +148,9 @@ def initialize_persistent(
   def download_persistent():
     exp_folder = os.path.join(config['exp_dir'], config['exp_name'])
     # download persistent ims from cloud
-    temp_persistent_path = os.path.join(exp_folder, 'checkpoints/persistent.ckpt')
+    temp_persistent_path = os.path.join(exp_folder, 'checkpoints/persistent.npy')
     download_blob(config['gs_path'], persistent_path, temp_persistent_path)
-    persistent_tensor = pickle.load(open(temp_persistent_path, 'rb'))
+    persistent_tensor = tf.constant(np.load(temp_persistent_path))
     # remove to save space
     os.remove(temp_persistent_path)
 
@@ -161,7 +163,7 @@ def initialize_persistent(
       persistent_tensor_init = download_persistent()
     else:
       # load from local file
-      persistent_tensor_init = pickle.load(open(persistent_path, 'rb'))
+      persistent_tensor_init = tf.constant(np.load(persistent_path))
   elif z_bank is not None:
     # gather latent states to initialize images from generator output
     persistent_tensor_init = strategy.gather(z_bank, 0)
